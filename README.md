@@ -5,7 +5,7 @@ A Home Assistant custom component that provides a service to unban IP addresses 
 ## Features
 
 - 🚫 Unban IP addresses from both file (`ip_bans.yaml`) and in-memory ban lists
-- 🔄 Supports both YAML formats (plain strings and dictionary entries)
+- ⚡ Async I/O operations (no blocking calls)
 - 📝 Comprehensive logging for troubleshooting
 - ✅ Graceful error handling
 
@@ -86,33 +86,23 @@ script:
 
 The integration performs two actions when unbanning an IP:
 
-1. **File Removal**: Removes the IP address from `ip_bans.yaml` (both string and dictionary formats)
+1. **File Removal**: Removes the IP address from `ip_bans.yaml` using async I/O operations
 2. **In-Memory Removal**: Attempts to remove the IP from Home Assistant's in-memory ban list (if accessible)
 
-### Supported YAML Formats
+### Supported YAML Format
 
-The integration handles both `ip_bans.yaml` formats:
+The integration works with Home Assistant's native `ip_bans.yaml` format:
 
-**String format:**
 ```yaml
-- "192.168.1.25"
-- "192.168.2.26"
+192.168.1.103:
+  banned_at: '2025-12-07T19:50:53.118232+00:00'
+192.168.1.14:
+  banned_at: '2025-12-30T08:13:06.372591+00:00'
+192.168.1.135:
+  banned_at: '2025-12-31T08:14:01.737210+00:00'
 ```
 
-**Dictionary format:**
-```yaml
-- ip_address: "192.168.1.25"
-  banned_at: "2025-11-06T21:42:12"
-- ip_address: "192.168.2.26"
-  banned_at: "2025-11-06T21:43:00"
-```
-
-**Mixed format:**
-```yaml
-- "192.168.1.25"
-- ip_address: "192.168.2.26"
-  banned_at: "2025-11-06T21:43:00"
-```
+This is a dictionary format where each IP address is a key with associated metadata.
 
 ## Logging
 
@@ -180,10 +170,9 @@ pytest tests/
 
 The test suite includes:
 - Service registration/unregistration
-- String format IP removal
-- Dictionary format IP removal
-- Mixed format handling
+- Dictionary format IP removal (Home Assistant native format)
 - IP not found scenarios
+- Missing file handling
 - In-memory ban list removal
 - Integration reload
 
@@ -211,5 +200,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Version 1.0.0
 - Initial release
 - Support for unbanning IPs from file and memory
-- Handle both string and dictionary YAML formats
+- Async I/O operations (no blocking calls)
 - Comprehensive error handling and logging
+- Clean, simple service interface: `unban_ip.execute`

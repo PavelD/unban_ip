@@ -20,48 +20,49 @@ async def async_setup_services(hass: HomeAssistant):
 
         # Path to ip_bans.yaml
         ban_file_path = hass.config.path(IP_BANS_FILE)
-        if not os.path.exists(ban_file_path):
+        
+        # Check if file exists (async)
+        file_exists = await hass.async_add_executor_job(os.path.exists, ban_file_path)
+        if not file_exists:
             _LOGGER.warning(f"{IP_BANS_FILE} not found, nothing to unban.")
             return
 
-        # Load bans
+        # Load bans (async file read)
         try:
-            with open(ban_file_path, "r") as f:
-                bans = yaml.safe_load(f) or []
+            def read_bans():
+                with open(ban_file_path, "r") as f:
+                    return yaml.safe_load(f) or {}
+            
+            bans = await hass.async_add_executor_job(read_bans)
         except Exception as e:
             _LOGGER.error(f"Error reading {IP_BANS_FILE}: {e}")
             return
 
-        # Ensure bans is a list
-        if not isinstance(bans, list):
-            _LOGGER.error(f"{IP_BANS_FILE} has invalid format (expected list)")
+        # Home Assistant uses dictionary format: {"IP": {"banned_at": "..."}}
+        if not isinstance(bans, dict):
+            _LOGGER.error(
+                f"{IP_BANS_FILE} has invalid format (expected dict, got {type(bans).__name__})"
+            )
             return
 
-        # Remove IP from file list (handle both string and dict formats)
-        new_bans = []
-        found = False
-        for b in bans:
-            # Handle both formats: plain strings or dictionaries with 'ip_address' key
-            if isinstance(b, str):
-                ip = b
-            elif isinstance(b, dict):
-                ip = b.get("ip_address")
-            else:
-                _LOGGER.warning(f"Skipping invalid ban entry: {b}")
-                continue
+        # Remove IP from ban dictionary
+        if ip_to_unban in bans:
+            del bans[ip_to_unban]
+            _LOGGER.info(f"Found IP {ip_to_unban} in {IP_BANS_FILE}, removing...")
 
-            if ip == ip_to_unban:
-                found = True
-                _LOGGER.debug(f"Found IP {ip_to_unban} in {IP_BANS_FILE}")
-            else:
-                new_bans.append(b)
-
-        if not found:
-            _LOGGER.info(f"IP {ip_to_unban} not found in {IP_BANS_FILE}.")
+            # Write updated bans back to file (async)
+            try:
+                def write_bans():
+                    with open(ban_file_path, "w") as f:
+                        yaml.safe_dump(bans, f, default_flow_style=False)
+                
+                await hass.async_add_executor_job(write_bans)
+                _LOGGER.info(f"IP {ip_to_unban} removed from {IP_BANS_FILE}.")
+            except Exception as e:
+                _LOGGER.error(f"Error writing {IP_BANS_FILE}: {e}")
+                return
         else:
-            with open(ban_file_path, "w") as f:
-                yaml.safe_dump(new_bans, f)
-            _LOGGER.info(f"IP {ip_to_unban} removed from {IP_BANS_FILE}.")
+            _LOGGER.info(f"IP {ip_to_unban} not found in {IP_BANS_FILE}.")
 
         # In-memory unban (if supported by HA version)
         try:
