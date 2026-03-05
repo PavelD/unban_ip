@@ -57,17 +57,15 @@ async def test_unban_ip_removes_from_file_and_memory(
 
 
 @pytest.mark.asyncio
-async def test_unban_ip_with_string_format(
-    hass: HomeAssistant, tmp_path, monkeypatch
-):
+async def test_unban_ip_with_string_format(hass: HomeAssistant, tmp_path, monkeypatch):
     """Test that unban_ip works with string format (plain IP list)."""
-    
+
     # Create ban file with string format
     ban_file_path = tmp_path / IP_BANS_FILE
     data = ["192.168.1.25", "192.168.2.26", "10.0.0.1"]
     with open(ban_file_path, "w") as f:
         yaml.safe_dump(data, f)
-    
+
     # Mock hass.config.path to return the temp file path
     monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
 
@@ -91,21 +89,19 @@ async def test_unban_ip_with_string_format(
 
 
 @pytest.mark.asyncio
-async def test_unban_ip_mixed_format(
-    hass: HomeAssistant, tmp_path, monkeypatch
-):
+async def test_unban_ip_mixed_format(hass: HomeAssistant, tmp_path, monkeypatch):
     """Test that unban_ip handles mixed string and dict formats."""
-    
+
     # Create ban file with mixed format
     ban_file_path = tmp_path / IP_BANS_FILE
     data = [
         "192.168.1.25",
         {"ip_address": "192.168.2.26", "banned_at": "2025-11-06T21:43:00"},
-        "10.0.0.1"
+        "10.0.0.1",
     ]
     with open(ban_file_path, "w") as f:
         yaml.safe_dump(data, f)
-    
+
     # Mock hass.config.path to return the temp file path
     monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
 
@@ -123,25 +119,25 @@ async def test_unban_ip_mixed_format(
     # Check file
     with open(ban_file_path, "r") as f:
         data = yaml.safe_load(f)
-    
+
     # String entry should be removed
-    assert "192.168.1.25" not in [b if isinstance(b, str) else b.get("ip_address") for b in data]
+    assert "192.168.1.25" not in [
+        b if isinstance(b, str) else b.get("ip_address") for b in data
+    ]
     # Other entries should remain
     assert len(data) == 2
 
 
 @pytest.mark.asyncio
-async def test_unban_ip_not_found(
-    hass: HomeAssistant, tmp_path, monkeypatch
-):
+async def test_unban_ip_not_found(hass: HomeAssistant, tmp_path, monkeypatch):
     """Test that unban_ip handles IP not in ban list gracefully."""
-    
+
     # Create ban file
     ban_file_path = tmp_path / IP_BANS_FILE
     data = ["192.168.1.25", "192.168.2.26"]
     with open(ban_file_path, "w") as f:
         yaml.safe_dump(data, f)
-    
+
     # Mock hass.config.path to return the temp file path
     monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
 

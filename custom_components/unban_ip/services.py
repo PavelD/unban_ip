@@ -49,13 +49,13 @@ async def async_setup_services(hass: HomeAssistant):
             else:
                 _LOGGER.warning(f"Skipping invalid ban entry: {b}")
                 continue
-            
+
             if ip == ip_to_unban:
                 found = True
                 _LOGGER.debug(f"Found IP {ip_to_unban} in {IP_BANS_FILE}")
             else:
                 new_bans.append(b)
-        
+
         if not found:
             _LOGGER.info(f"IP {ip_to_unban} not found in {IP_BANS_FILE}.")
         else:
