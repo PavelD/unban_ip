@@ -32,9 +32,31 @@ async def async_setup_services(hass: HomeAssistant):
             _LOGGER.error(f"Error reading {IP_BANS_FILE}: {e}")
             return
 
-        # Remove IP from file list
-        new_bans = [b for b in bans if b.get("ip_address") != ip_to_unban]
-        if len(new_bans) == len(bans):
+        # Ensure bans is a list
+        if not isinstance(bans, list):
+            _LOGGER.error(f"{IP_BANS_FILE} has invalid format (expected list)")
+            return
+
+        # Remove IP from file list (handle both string and dict formats)
+        new_bans = []
+        found = False
+        for b in bans:
+            # Handle both formats: plain strings or dictionaries with 'ip_address' key
+            if isinstance(b, str):
+                ip = b
+            elif isinstance(b, dict):
+                ip = b.get("ip_address")
+            else:
+                _LOGGER.warning(f"Skipping invalid ban entry: {b}")
+                continue
+            
+            if ip == ip_to_unban:
+                found = True
+                _LOGGER.debug(f"Found IP {ip_to_unban} in {IP_BANS_FILE}")
+            else:
+                new_bans.append(b)
+        
+        if not found:
             _LOGGER.info(f"IP {ip_to_unban} not found in {IP_BANS_FILE}.")
         else:
             with open(ban_file_path, "w") as f:
@@ -53,12 +75,12 @@ async def async_setup_services(hass: HomeAssistant):
             _LOGGER.warning(f"Could not remove IP from in-memory bans: {e}")
 
     # Register the service
-    hass.services.async_register(DOMAIN, "unban_ip", handle_unban_ip)
-    _LOGGER.debug("Service 'unban_ip' registered.")
+    hass.services.async_register(DOMAIN, "execute", handle_unban_ip)
+    _LOGGER.debug("Service 'execute' registered.")
 
 
 async def async_unload_services(hass: HomeAssistant):
     """Unregister all Unban IP services."""
-    if hass.services.has_service(DOMAIN, "unban_ip"):
-        hass.services.async_remove(DOMAIN, "unban_ip")
-        _LOGGER.debug("Service 'unban_ip' unregistered.")
+    if hass.services.has_service(DOMAIN, "execute"):
+        hass.services.async_remove(DOMAIN, "execute")
+        _LOGGER.debug("Service 'execute' unregistered.")
