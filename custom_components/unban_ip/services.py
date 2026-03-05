@@ -20,7 +20,7 @@ async def async_setup_services(hass: HomeAssistant):
 
         # Path to ip_bans.yaml
         ban_file_path = hass.config.path(IP_BANS_FILE)
-        
+
         # Check if file exists (async)
         file_exists = await hass.async_add_executor_job(os.path.exists, ban_file_path)
         if not file_exists:
@@ -29,10 +29,11 @@ async def async_setup_services(hass: HomeAssistant):
 
         # Load bans (async file read)
         try:
+
             def read_bans():
                 with open(ban_file_path, "r") as f:
                     return yaml.safe_load(f) or {}
-            
+
             bans = await hass.async_add_executor_job(read_bans)
         except Exception as e:
             _LOGGER.error(f"Error reading {IP_BANS_FILE}: {e}")
@@ -52,10 +53,11 @@ async def async_setup_services(hass: HomeAssistant):
 
             # Write updated bans back to file (async)
             try:
+
                 def write_bans():
                     with open(ban_file_path, "w") as f:
                         yaml.safe_dump(bans, f, default_flow_style=False)
-                
+
                 await hass.async_add_executor_job(write_bans)
                 _LOGGER.info(f"IP {ip_to_unban} removed from {IP_BANS_FILE}.")
             except Exception as e:
