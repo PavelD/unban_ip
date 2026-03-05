@@ -6,5 +6,7 @@
   "documentation": "https://github.com/PavelD/hacs-unban_ip/",
   "issue_tracker": "https://github.com/PavelD/hacs-unban_ip/issues",
   "dependencies": ["http"],
-  "codeowners": ["@PavelD"]
+  "codeowners": ["@PavelD"],
+  "iot_class": "local_polling",
+  "integration_type": "service"   
 }
