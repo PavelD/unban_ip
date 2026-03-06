@@ -10,6 +10,7 @@ on:
 
 jobs:
   release:
+    if: "!startsWith(github.event.head_commit.message, 'Update manifest version to')"
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +32,7 @@ jobs:
           git config user.email github-actions@github.com
           git add custom_components/**/manifest.json
           git commit -m "Update manifest version to $TAG_NAME" || echo "No changes"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:$GITHUB_REF_NAME
+          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:$GITHUB_REF_NAME
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
