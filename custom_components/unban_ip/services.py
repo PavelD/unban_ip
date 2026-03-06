@@ -28,12 +28,13 @@ async def async_setup_services(hass: HomeAssistant):
         file_exists = await hass.async_add_executor_job(os.path.exists, ban_file_path)
         if file_exists:
             try:
+
                 def read_bans():
                     with open(ban_file_path, "r") as f:
                         return yaml.safe_load(f) or {}
 
                 bans = await hass.async_add_executor_job(read_bans)
-                
+
                 if isinstance(bans, dict):
                     file_ips = list(bans.keys())
                     _LOGGER.debug(f"Found {len(file_ips)} IPs in {IP_BANS_FILE}")
@@ -57,14 +58,11 @@ async def async_setup_services(hass: HomeAssistant):
 
         # Merge and deduplicate IPs
         all_ips = sorted(set(file_ips + memory_ips))
-        
+
         _LOGGER.info(f"Total banned IPs: {len(all_ips)}")
 
         # Build response
-        response = {
-            "ips": all_ips,
-            "count": len(all_ips)
-        }
+        response = {"ips": all_ips, "count": len(all_ips)}
 
         if debug:
             response["file_ips"] = sorted(file_ips)
@@ -137,11 +135,9 @@ async def async_setup_services(hass: HomeAssistant):
             _LOGGER.warning(f"Could not remove IP from in-memory bans: {e}")
 
     # Register the services
-    hass.services.async_register(
-        DOMAIN, "execute", handle_unban_ip
-    )
+    hass.services.async_register(DOMAIN, "execute", handle_unban_ip)
     _LOGGER.debug("Service 'execute' registered.")
-    
+
     hass.services.async_register(
         DOMAIN, "list_banned", handle_list_banned, supports_response="only"
     )
@@ -153,7 +149,7 @@ async def async_unload_services(hass: HomeAssistant):
     if hass.services.has_service(DOMAIN, "execute"):
         hass.services.async_remove(DOMAIN, "execute")
         _LOGGER.debug("Service 'execute' unregistered.")
-    
+
     if hass.services.has_service(DOMAIN, "list_banned"):
         hass.services.async_remove(DOMAIN, "list_banned")
         _LOGGER.debug("Service 'list_banned' unregistered.")
