@@ -28,7 +28,7 @@ jobs:
           git config user.email github-actions@github.com
           git add custom_components/**/manifest.json
           git commit -m "Update manifest version to $TAG_NAME" || echo "No changes"
-          git push
+          git push origin HEAD:$GITHUB_REF_NAME
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
