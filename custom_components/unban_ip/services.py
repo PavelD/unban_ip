@@ -23,7 +23,8 @@ async def async_setup_services(hass: HomeAssistant):
         try:
             ban_manager = hass.http.app.get(KEY_BAN_MANAGER)
             if ban_manager:
-                banned_ips = sorted(ban_manager.banned.keys())
+                # IpBanManager stores bans in ip_bans_lookup dict
+                banned_ips = sorted(str(ip) for ip in ban_manager.ip_bans_lookup.keys())
                 _LOGGER.debug(f"Found {len(banned_ips)} IPs in ban manager")
             else:
                 _LOGGER.warning("Ban manager not available")

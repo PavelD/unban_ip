@@ -11,12 +11,18 @@ from custom_components.unban_ip.const import DOMAIN, IP_BANS_FILE, KEY_BAN_MANAG
 
 
 def create_mock_ban_manager(banned_ips=None):
-    """Create a mock ban manager for testing."""
+    """Create a mock ban manager for testing.
+    
+    Args:
+        banned_ips: Dict mapping IP strings to ban info (keys will be used as IP addresses)
+    """
     if banned_ips is None:
         banned_ips = {}
     
     mock_manager = MagicMock()
-    mock_manager.banned = banned_ips
+    # IpBanManager uses ip_bans_lookup dict with IPv4Address/IPv6Address keys
+    # For testing, we'll use string keys since they'll be converted to strings anyway
+    mock_manager.ip_bans_lookup = banned_ips
     mock_manager.async_load = AsyncMock()
     return mock_manager
 
