@@ -1,7 +1,20 @@
-unban_ip:
-  description: "Unban a specific IP address from Home Assistant HTTP"
+execute:
+  name: "Unban IP"
+  description: "Remove an IP address from the Home Assistant ban list"
   fields:
     ip_address:
-      description: "IP address to unban"
+      name: "IP Address"
+      description: "The IP address to unban"
       example: "192.168.1.25"
       required: true
+
+list_banned:
+  name: "List Banned IPs"
+  description: "List all banned IP addresses from file and memory"
+  fields:
+    debug:
+      name: "Debug Mode"
+      description: "Show detailed information (separate file and memory lists)"
+      example: false
+      required: false
+      default: false
