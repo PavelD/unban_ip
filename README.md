@@ -91,18 +91,11 @@ The integration also provides a service called `unban_ip.list_banned` that retur
 
 1. Go to **Developer Tools** → **Services**
 2. Select service: `unban_ip.list_banned`
-3. (Optional) Enable debug mode to see detailed information:
-
-```yaml
-debug: true
-```
-
-4. Click **Call Service**
-5. View the response in the "Response" section
+3. Click **Call Service**
+4. View the response in the "Response" section
 
 #### Response Format
 
-**Default Mode** (simple list):
 ```yaml
 ips:
   - "10.0.0.5"
@@ -111,22 +104,7 @@ ips:
 count: 3
 ```
 
-**Debug Mode** (detailed breakdown):
-```yaml
-ips:
-  - "10.0.0.5"
-  - "192.168.1.25"
-  - "192.168.2.26"
-count: 3
-file_ips:
-  - "192.168.1.25"
-  - "192.168.2.26"
-memory_ips:
-  - "10.0.0.5"
-  - "192.168.1.25"
-```
-
-The `ips` list is automatically deduplicated and sorted. Debug mode shows which IPs come from the file vs in-memory ban lists.
+The `ips` list is automatically sorted and contains all currently banned IP addresses.
 
 #### Via Automation
 
@@ -152,35 +130,34 @@ script:
     alias: "Check Banned IPs"
     sequence:
       - service: unban_ip.list_banned
-        data:
-          debug: true
         response_variable: ban_info
       - service: persistent_notification.create
         data:
           title: "Banned IPs Report"
-          message: >
-            Total: {{ ban_info.count }}
-            File: {{ ban_info.file_ips | length }}
-            Memory: {{ ban_info.memory_ips | length }}
+          message: "Currently {{ ban_info.count }} IPs are banned"
 ```
 
 ## How It Works
 
 ### Unban Service
 
-The integration performs two actions when unbanning an IP:
+The integration uses Home Assistant's official ban manager API:
 
 1. **File Removal**: Removes the IP address from `ip_bans.yaml` using async I/O operations
-2. **In-Memory Removal**: Attempts to remove the IP from Home Assistant's in-memory ban list (if accessible)
+2. **Reload Ban Manager**: Calls `ban_manager.async_load()` to reload the ban list from file
+3. **Automatic Sync**: The ban manager automatically syncs memory with the file
+
+This ensures the file and in-memory ban list are always in sync.
 
 ### List Banned Service
 
-The list service:
+The list service reads directly from Home Assistant's ban manager:
 
-1. **Reads from File**: Asynchronously reads `ip_bans.yaml` to get banned IPs
-2. **Reads from Memory**: Attempts to access Home Assistant's in-memory ban list
-3. **Merges & Deduplicates**: Combines both sources, removes duplicates, and sorts the result
-4. **Returns Response**: Provides the data in a structured format for use in automations
+1. **Reads from Ban Manager**: Accesses the official ban manager to get all banned IPs
+2. **Returns Sorted List**: Provides a sorted list of all currently banned IP addresses
+3. **Structured Response**: Returns data in a format suitable for use in automations
+
+Since we use `async_load()` when unbanning, the ban manager is always the single source of truth.
 
 ### Supported YAML Format
 
@@ -266,10 +243,9 @@ The test suite includes:
 - Dictionary format IP removal (Home Assistant native format)
 - IP not found scenarios
 - Missing file handling
-- In-memory ban list removal
+- Ban manager reload verification
 - Integration reload
-- List banned IPs in default and debug modes
-- IP deduplication across file and memory sources
+- List banned IPs from ban manager
 - Empty results handling
 
 ## Contributing
@@ -293,9 +269,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### Version 1.2.0
+- **BREAKING**: Refactored to use Home Assistant's official ban manager API
+- Uses `AppKey["IpBanManager"]` for proper type safety
+- Calls `ban_manager.async_load()` after file changes for automatic sync
+- Removed debug mode (no longer needed with single source of truth)
+- Simplified `list_banned` service (reads directly from ban manager)
+- More reliable and future-proof implementation
+
 ### Version 1.1.0
 - Added `unban_ip.list_banned` service to list all banned IPs
-- Support for debug mode to show detailed IP source information (file vs memory)
 - Service responses with structured data for use in automations
 - Enhanced UI with friendly service names
 

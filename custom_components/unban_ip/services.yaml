@@ -10,11 +10,4 @@ execute:
 
 list_banned:
   name: "List Banned IPs"
-  description: "List all banned IP addresses from file and memory"
-  fields:
-    debug:
-      name: "Debug Mode"
-      description: "Show detailed information (separate file and memory lists)"
-      example: false
-      required: false
-      default: false
+  description: "List all banned IP addresses"

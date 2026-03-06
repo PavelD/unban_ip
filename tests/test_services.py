@@ -1,12 +1,24 @@
 import yaml
 import pytest
+from unittest.mock import AsyncMock, MagicMock
 from homeassistant.core import HomeAssistant
 
 from custom_components.unban_ip.services import (
     async_setup_services,
     async_unload_services,
 )
-from custom_components.unban_ip.const import DOMAIN, IP_BANS_FILE
+from custom_components.unban_ip.const import DOMAIN, IP_BANS_FILE, KEY_BAN_MANAGER
+
+
+def create_mock_ban_manager(banned_ips=None):
+    """Create a mock ban manager for testing."""
+    if banned_ips is None:
+        banned_ips = {}
+    
+    mock_manager = MagicMock()
+    mock_manager.banned = banned_ips
+    mock_manager.async_load = AsyncMock()
+    return mock_manager
 
 
 @pytest.mark.asyncio
@@ -23,7 +35,7 @@ async def test_service_registration(hass: HomeAssistant):
 async def test_unban_ip_removes_from_file_and_memory(
     hass: HomeAssistant, tmp_path, monkeypatch
 ):
-    """Test that execute service removes IP from file and memory (dict format)."""
+    """Test that execute service removes IP from file and reloads ban manager."""
 
     # Create ban file with Home Assistant's dictionary format
     ban_file_path = tmp_path / IP_BANS_FILE
@@ -37,12 +49,10 @@ async def test_unban_ip_removes_from_file_and_memory(
     # Mock hass.config.path to return the temp file path
     monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
 
-    # Create dummy in-memory ban list
-    class DummyBan:
-        def __init__(self):
-            self.banned = {"192.168.1.25": "banned"}
-
-    hass.data["http"] = type("dummy_http", (), {"_ban": DummyBan()})()
+    # Mock ban manager
+    mock_ban_manager = create_mock_ban_manager({"192.168.1.25": "banned"})
+    hass.http = MagicMock()
+    hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
 
     # Register service
     await async_setup_services(hass)
@@ -61,8 +71,8 @@ async def test_unban_ip_removes_from_file_and_memory(
     assert "192.168.1.25" not in data
     assert "192.168.2.26" in data
 
-    # Check in-memory ban list
-    assert "192.168.1.25" not in hass.data["http"]._ban.banned
+    # Check that async_load was called to reload ban manager
+    mock_ban_manager.async_load.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -159,12 +169,10 @@ async def test_list_banned_default_mode(hass: HomeAssistant, tmp_path, monkeypat
 
     monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
 
-    # Create in-memory ban list
-    class DummyBan:
-        def __init__(self):
-            self.banned = {"192.168.1.25": "banned", "10.0.0.5": "banned"}
-
-    hass.data["http"] = type("dummy_http", (), {"_ban": DummyBan()})()
+    # Mock ban manager
+    mock_ban_manager = create_mock_ban_manager({"192.168.1.25": "banned", "10.0.0.5": "banned"})
+    hass.http = MagicMock()
+    hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
 
     # Register service
     await async_setup_services(hass)
@@ -192,134 +200,12 @@ async def test_list_banned_default_mode(hass: HomeAssistant, tmp_path, monkeypat
 
 
 @pytest.mark.asyncio
-async def test_list_banned_debug_mode(hass: HomeAssistant, tmp_path, monkeypatch):
-    """Test list_banned service in debug mode."""
-    # Create ban file
-    ban_file_path = tmp_path / IP_BANS_FILE
-    bans = {
-        "192.168.1.25": {"banned_at": "2025-11-06T21:42:12+00:00"},
-        "192.168.2.26": {"banned_at": "2025-11-06T21:43:00+00:00"},
-    }
-    with open(ban_file_path, "w") as f:
-        yaml.safe_dump(bans, f)
-
-    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
-
-    # Create in-memory ban list
-    class DummyBan:
-        def __init__(self):
-            self.banned = {"192.168.1.25": "banned", "10.0.0.5": "banned"}
-
-    hass.data["http"] = type("dummy_http", (), {"_ban": DummyBan()})()
-
-    # Register service
-    await async_setup_services(hass)
-
-    # Call service with debug=True
-    response = await hass.services.async_call(
-        DOMAIN,
-        "list_banned",
-        {"debug": True},
-        blocking=True,
-        return_response=True,
-    )
-
-    # Check response format (debug mode)
-    assert "ips" in response
-    assert "count" in response
-    assert "file_ips" in response  # Should be present in debug mode
-    assert "memory_ips" in response  # Should be present in debug mode
-
-    # Check merged list
-    assert response["count"] == 3
-    assert set(response["ips"]) == {"192.168.1.25", "192.168.2.26", "10.0.0.5"}
-
-    # Check file IPs
-    assert set(response["file_ips"]) == {"192.168.1.25", "192.168.2.26"}
-
-    # Check memory IPs
-    assert set(response["memory_ips"]) == {"192.168.1.25", "10.0.0.5"}
-
-
-@pytest.mark.asyncio
-async def test_list_banned_file_not_found(hass: HomeAssistant, tmp_path, monkeypatch):
-    """Test list_banned service when ban file doesn't exist."""
-    ban_file_path = tmp_path / "nonexistent_ip_bans.yaml"
-    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
-
-    # Create in-memory ban list
-    class DummyBan:
-        def __init__(self):
-            self.banned = {"10.0.0.5": "banned"}
-
-    hass.data["http"] = type("dummy_http", (), {"_ban": DummyBan()})()
-
-    # Register service
-    await async_setup_services(hass)
-
-    # Call service
-    response = await hass.services.async_call(
-        DOMAIN,
-        "list_banned",
-        {},
-        blocking=True,
-        return_response=True,
-    )
-
-    # Should only have memory IPs
-    assert response["count"] == 1
-    assert response["ips"] == ["10.0.0.5"]
-
-
-@pytest.mark.asyncio
-async def test_list_banned_no_memory_bans(hass: HomeAssistant, tmp_path, monkeypatch):
-    """Test list_banned service when there are no in-memory bans."""
-    # Create ban file
-    ban_file_path = tmp_path / IP_BANS_FILE
-    bans = {
-        "192.168.1.25": {"banned_at": "2025-11-06T21:42:12+00:00"},
-    }
-    with open(ban_file_path, "w") as f:
-        yaml.safe_dump(bans, f)
-
-    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
-
-    # No http component or empty memory bans
-    hass.data["http"] = None
-
-    # Register service
-    await async_setup_services(hass)
-
-    # Call service
-    response = await hass.services.async_call(
-        DOMAIN,
-        "list_banned",
-        {},
-        blocking=True,
-        return_response=True,
-    )
-
-    # Should only have file IPs
-    assert response["count"] == 1
-    assert response["ips"] == ["192.168.1.25"]
-
-
-@pytest.mark.asyncio
-async def test_list_banned_empty_result(hass: HomeAssistant, tmp_path, monkeypatch):
+async def test_list_banned_no_bans(hass: HomeAssistant):
     """Test list_banned service when there are no banned IPs."""
-    # Create empty ban file
-    ban_file_path = tmp_path / IP_BANS_FILE
-    with open(ban_file_path, "w") as f:
-        yaml.safe_dump({}, f)
-
-    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
-
-    # Empty memory bans
-    class DummyBan:
-        def __init__(self):
-            self.banned = {}
-
-    hass.data["http"] = type("dummy_http", (), {"_ban": DummyBan()})()
+    # Mock ban manager with empty bans
+    mock_ban_manager = create_mock_ban_manager({})
+    hass.http = MagicMock()
+    hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
 
     # Register service
     await async_setup_services(hass)
@@ -333,52 +219,37 @@ async def test_list_banned_empty_result(hass: HomeAssistant, tmp_path, monkeypat
         return_response=True,
     )
 
-    # Should have empty lists
+    # Should have empty list
     assert response["count"] == 0
     assert response["ips"] == []
 
 
 @pytest.mark.asyncio
-async def test_list_banned_deduplication(hass: HomeAssistant, tmp_path, monkeypatch):
-    """Test that list_banned properly deduplicates IPs present in both sources."""
-    # Create ban file with IPs
-    ban_file_path = tmp_path / IP_BANS_FILE
-    bans = {
-        "192.168.1.25": {"banned_at": "2025-11-06T21:42:12+00:00"},
-        "192.168.2.26": {"banned_at": "2025-11-06T21:43:00+00:00"},
-    }
-    with open(ban_file_path, "w") as f:
-        yaml.safe_dump(bans, f)
-
-    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
-
-    # Create in-memory ban list with same IPs
-    class DummyBan:
-        def __init__(self):
-            self.banned = {
-                "192.168.1.25": "banned",
-                "192.168.2.26": "banned",
-            }
-
-    hass.data["http"] = type("dummy_http", (), {"_ban": DummyBan()})()
+async def test_list_banned_multiple_ips(hass: HomeAssistant):
+    """Test list_banned service with multiple IPs."""
+    # Mock ban manager with multiple IPs
+    mock_ban_manager = create_mock_ban_manager({
+        "192.168.1.25": "banned",
+        "192.168.2.26": "banned",
+        "10.0.0.5": "banned",
+    })
+    hass.http = MagicMock()
+    hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
 
     # Register service
     await async_setup_services(hass)
 
-    # Call service with debug mode
+    # Call service
     response = await hass.services.async_call(
         DOMAIN,
         "list_banned",
-        {"debug": True},
+        {},
         blocking=True,
         return_response=True,
     )
 
-    # Both sources have 2 IPs
-    assert len(response["file_ips"]) == 2
-    assert len(response["memory_ips"]) == 2
-
-    # But merged list should only have 2 (deduplicated)
-    assert response["count"] == 2
-    assert len(response["ips"]) == 2
-    assert set(response["ips"]) == {"192.168.1.25", "192.168.2.26"}
+    # Check response
+    assert response["count"] == 3
+    assert set(response["ips"]) == {"192.168.1.25", "192.168.2.26", "10.0.0.5"}
+    # Should be sorted
+    assert response["ips"] == ["10.0.0.5", "192.168.1.25", "192.168.2.26"]
