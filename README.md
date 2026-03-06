@@ -5,6 +5,7 @@ A Home Assistant custom component that provides a service to unban IP addresses 
 ## Features
 
 - 🚫 Unban IP addresses from both file (`ip_bans.yaml`) and in-memory ban lists
+- 📋 List all banned IP addresses (from file and memory)
 - ⚡ Async I/O operations (no blocking calls)
 - 📝 Comprehensive logging for troubleshooting
 - ✅ Graceful error handling
@@ -82,12 +83,104 @@ script:
           ip_address: "192.168.1.25"
 ```
 
+### List Banned IPs
+
+The integration also provides a service called `unban_ip.list_banned` that returns all currently banned IP addresses.
+
+#### Via Developer Tools UI
+
+1. Go to **Developer Tools** → **Services**
+2. Select service: `unban_ip.list_banned`
+3. (Optional) Enable debug mode to see detailed information:
+
+```yaml
+debug: true
+```
+
+4. Click **Call Service**
+5. View the response in the "Response" section
+
+#### Response Format
+
+**Default Mode** (simple list):
+```yaml
+ips:
+  - "10.0.0.5"
+  - "192.168.1.25"
+  - "192.168.2.26"
+count: 3
+```
+
+**Debug Mode** (detailed breakdown):
+```yaml
+ips:
+  - "10.0.0.5"
+  - "192.168.1.25"
+  - "192.168.2.26"
+count: 3
+file_ips:
+  - "192.168.1.25"
+  - "192.168.2.26"
+memory_ips:
+  - "10.0.0.5"
+  - "192.168.1.25"
+```
+
+The `ips` list is automatically deduplicated and sorted. Debug mode shows which IPs come from the file vs in-memory ban lists.
+
+#### Via Automation
+
+```yaml
+automation:
+  - alias: "Check banned IPs daily"
+    trigger:
+      - platform: time
+        at: "09:00:00"
+    action:
+      - service: unban_ip.list_banned
+        response_variable: banned_data
+      - service: notify.notify
+        data:
+          message: "Currently {{ banned_data.count }} IPs are banned"
+```
+
+#### Via Script
+
+```yaml
+script:
+  check_banned_ips:
+    alias: "Check Banned IPs"
+    sequence:
+      - service: unban_ip.list_banned
+        data:
+          debug: true
+        response_variable: ban_info
+      - service: persistent_notification.create
+        data:
+          title: "Banned IPs Report"
+          message: >
+            Total: {{ ban_info.count }}
+            File: {{ ban_info.file_ips | length }}
+            Memory: {{ ban_info.memory_ips | length }}
+```
+
 ## How It Works
+
+### Unban Service
 
 The integration performs two actions when unbanning an IP:
 
 1. **File Removal**: Removes the IP address from `ip_bans.yaml` using async I/O operations
 2. **In-Memory Removal**: Attempts to remove the IP from Home Assistant's in-memory ban list (if accessible)
+
+### List Banned Service
+
+The list service:
+
+1. **Reads from File**: Asynchronously reads `ip_bans.yaml` to get banned IPs
+2. **Reads from Memory**: Attempts to access Home Assistant's in-memory ban list
+3. **Merges & Deduplicates**: Combines both sources, removes duplicates, and sorts the result
+4. **Returns Response**: Provides the data in a structured format for use in automations
 
 ### Supported YAML Format
 
@@ -169,12 +262,15 @@ pytest tests/
 ### Test Coverage
 
 The test suite includes:
-- Service registration/unregistration
+- Service registration/unregistration (both `execute` and `list_banned`)
 - Dictionary format IP removal (Home Assistant native format)
 - IP not found scenarios
 - Missing file handling
 - In-memory ban list removal
 - Integration reload
+- List banned IPs in default and debug modes
+- IP deduplication across file and memory sources
+- Empty results handling
 
 ## Contributing
 
@@ -196,6 +292,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Discussions**: [GitHub Discussions](https://github.com/PavelD/hacs-unban_ip/discussions)
 
 ## Changelog
+
+### Version 1.1.0
+- Added `unban_ip.list_banned` service to list all banned IPs
+- Support for debug mode to show detailed IP source information (file vs memory)
+- Service responses with structured data for use in automations
+- Enhanced UI with friendly service names
 
 ### Version 1.0.0
 - Initial release
