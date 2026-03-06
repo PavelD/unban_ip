@@ -12,6 +12,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Extract Tag Without `v`
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/} # Remove refs/tags/
+          TAG_NAME=${TAG_NAME#v}            # Remove leading v if present
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+
+      - name: Update version
+        run: |
+          python3 .github/update_version.py --version $TAG_NAME
+
+      - name: Commit version change
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add custom_components/**/manifest.json
+          git commit -m "Update manifest version to $TAG_NAME" || echo "No changes"
+          git push
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
