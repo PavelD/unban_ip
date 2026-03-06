@@ -156,28 +156,21 @@ async def test_list_banned_service_registration(hass: HomeAssistant):
 
 
 @pytest.mark.asyncio
-async def test_list_banned_default_mode(hass: HomeAssistant, tmp_path, monkeypatch):
-    """Test list_banned service in default mode (no debug)."""
-    # Create ban file
-    ban_file_path = tmp_path / IP_BANS_FILE
-    bans = {
-        "192.168.1.25": {"banned_at": "2025-11-06T21:42:12+00:00"},
-        "192.168.2.26": {"banned_at": "2025-11-06T21:43:00+00:00"},
-    }
-    with open(ban_file_path, "w") as f:
-        yaml.safe_dump(bans, f)
-
-    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
-
-    # Mock ban manager
-    mock_ban_manager = create_mock_ban_manager({"192.168.1.25": "banned", "10.0.0.5": "banned"})
+async def test_list_banned_from_ban_manager(hass: HomeAssistant):
+    """Test list_banned service reads from ban manager."""
+    # Mock ban manager with IPs (single source of truth)
+    mock_ban_manager = create_mock_ban_manager({
+        "192.168.1.25": "banned",
+        "192.168.2.26": "banned",
+        "10.0.0.5": "banned"
+    })
     hass.http = MagicMock()
     hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
 
     # Register service
     await async_setup_services(hass)
 
-    # Call service without debug parameter
+    # Call service
     response = await hass.services.async_call(
         DOMAIN,
         "list_banned",
@@ -186,13 +179,11 @@ async def test_list_banned_default_mode(hass: HomeAssistant, tmp_path, monkeypat
         return_response=True,
     )
 
-    # Check response format (default mode)
+    # Check response format
     assert "ips" in response
     assert "count" in response
-    assert "file_ips" not in response  # Should not be in default mode
-    assert "memory_ips" not in response  # Should not be in default mode
 
-    # Check merged list
+    # Check list from ban manager
     assert response["count"] == 3
     assert set(response["ips"]) == {"192.168.1.25", "192.168.2.26", "10.0.0.5"}
     # Should be sorted
