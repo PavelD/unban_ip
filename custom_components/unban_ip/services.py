@@ -21,13 +21,22 @@ async def async_setup_services(hass: HomeAssistant):
 
         # Read IPs from ban manager (single source of truth)
         try:
-            ban_manager = hass.http.app.get(KEY_BAN_MANAGER)
-            if ban_manager:
-                # IpBanManager stores bans in ip_bans_lookup dict
-                banned_ips = sorted(str(ip) for ip in ban_manager.ip_bans_lookup.keys())
-                _LOGGER.debug(f"Found {len(banned_ips)} IPs in ban manager")
+            # Safe attribute access in case HTTP component isn't loaded
+            http_app = getattr(hass, "http", None)
+            if http_app is None:
+                _LOGGER.warning("HTTP component not available")
             else:
-                _LOGGER.warning("Ban manager not available")
+                app = getattr(http_app, "app", None)
+                if app is None:
+                    _LOGGER.warning("HTTP app not available")
+                else:
+                    ban_manager = app.get(KEY_BAN_MANAGER)
+                    if ban_manager:
+                        # IpBanManager stores bans in ip_bans_lookup dict
+                        banned_ips = sorted(str(ip) for ip in ban_manager.ip_bans_lookup.keys())
+                        _LOGGER.debug(f"Found {len(banned_ips)} IPs in ban manager")
+                    else:
+                        _LOGGER.warning("Ban manager not available")
         except Exception as e:
             _LOGGER.warning(f"Could not read ban manager: {e}")
 
@@ -89,12 +98,21 @@ async def async_setup_services(hass: HomeAssistant):
 
             # Reload ban manager from file (syncs memory with file)
             try:
-                ban_manager = hass.http.app.get(KEY_BAN_MANAGER)
-                if ban_manager:
-                    await ban_manager.async_load()
-                    _LOGGER.info(f"Ban manager reloaded from {IP_BANS_FILE}")
+                # Safe attribute access in case HTTP component isn't loaded
+                http_app = getattr(hass, "http", None)
+                if http_app is None:
+                    _LOGGER.warning("HTTP component not available for reload")
                 else:
-                    _LOGGER.warning("Ban manager not available for reload")
+                    app = getattr(http_app, "app", None)
+                    if app is None:
+                        _LOGGER.warning("HTTP app not available for reload")
+                    else:
+                        ban_manager = app.get(KEY_BAN_MANAGER)
+                        if ban_manager:
+                            await ban_manager.async_load()
+                            _LOGGER.info(f"Ban manager reloaded from {IP_BANS_FILE}")
+                        else:
+                            _LOGGER.warning("Ban manager not available for reload")
             except Exception as e:
                 _LOGGER.warning(f"Could not reload ban manager: {e}")
         else:

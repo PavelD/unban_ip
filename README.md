@@ -271,10 +271,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Version 1.2.0
 - **BREAKING**: Refactored to use Home Assistant's official ban manager API
-- Uses `AppKey["IpBanManager"]` for proper type safety
+- Uses official `KEY_BAN_MANAGER` and `IP_BANS_FILE` constants from Home Assistant
 - Calls `ban_manager.async_load()` after file changes for automatic sync
-- Removed debug mode (no longer needed with single source of truth)
+- **BREAKING**: Removed `debug` parameter from `list_banned` service
+  - The service now returns only `ips` and `count` fields
+  - Removed `file_ips` and `memory_ips` fields (no longer relevant with single source of truth)
+  - **Migration**: Update automations/templates that use `file_ips` or `memory_ips` to use `ips` instead
 - Simplified `list_banned` service (reads directly from ban manager)
+- Added safe attribute access for HTTP component (handles edge cases where HTTP isn't loaded)
 - More reliable and future-proof implementation
 
 ### Version 1.1.0
