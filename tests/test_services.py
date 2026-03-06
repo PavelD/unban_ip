@@ -12,13 +12,13 @@ from custom_components.unban_ip.const import DOMAIN, IP_BANS_FILE, KEY_BAN_MANAG
 
 def create_mock_ban_manager(banned_ips=None):
     """Create a mock ban manager for testing.
-    
+
     Args:
         banned_ips: Dict mapping IP strings to ban info (keys will be used as IP addresses)
     """
     if banned_ips is None:
         banned_ips = {}
-    
+
     mock_manager = MagicMock()
     # IpBanManager uses ip_bans_lookup dict with IPv4Address/IPv6Address keys
     # For testing, we'll use string keys since they'll be converted to strings anyway
@@ -165,11 +165,9 @@ async def test_list_banned_service_registration(hass: HomeAssistant):
 async def test_list_banned_from_ban_manager(hass: HomeAssistant):
     """Test list_banned service reads from ban manager."""
     # Mock ban manager with IPs (single source of truth)
-    mock_ban_manager = create_mock_ban_manager({
-        "192.168.1.25": "banned",
-        "192.168.2.26": "banned",
-        "10.0.0.5": "banned"
-    })
+    mock_ban_manager = create_mock_ban_manager(
+        {"192.168.1.25": "banned", "192.168.2.26": "banned", "10.0.0.5": "banned"}
+    )
     hass.http = MagicMock()
     hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
 
@@ -225,11 +223,13 @@ async def test_list_banned_no_bans(hass: HomeAssistant):
 async def test_list_banned_multiple_ips(hass: HomeAssistant):
     """Test list_banned service with multiple IPs."""
     # Mock ban manager with multiple IPs
-    mock_ban_manager = create_mock_ban_manager({
-        "192.168.1.25": "banned",
-        "192.168.2.26": "banned",
-        "10.0.0.5": "banned",
-    })
+    mock_ban_manager = create_mock_ban_manager(
+        {
+            "192.168.1.25": "banned",
+            "192.168.2.26": "banned",
+            "10.0.0.5": "banned",
+        }
+    )
     hass.http = MagicMock()
     hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
 
