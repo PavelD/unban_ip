@@ -16,7 +16,7 @@ def create_mock_ban_manager(banned_ip_strings=None):
 
     Args:
         banned_ip_strings: List of IP address strings to ban
-    
+
     Returns:
         Mock IpBanManager with ip_bans_lookup using IPv4Address/IPv6Address keys
     """
