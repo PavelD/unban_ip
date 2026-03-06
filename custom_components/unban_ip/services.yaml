@@ -5,3 +5,12 @@ execute:
       description: "The IP address to unban"
       example: "192.168.1.25"
       required: true
+
+list_banned:
+  description: "List all banned IP addresses from file and memory"
+  fields:
+    debug:
+      description: "Show detailed information (separate file and memory lists)"
+      example: false
+      required: false
+      default: false
