@@ -1,5 +1,4 @@
 {
-<<<<<<< dev
   "title": "Unban IP",
   "services": {
     "execute": {
@@ -24,7 +23,3 @@
     }
   }
 }
-=======
-  "title": "Unban IP"
-}
->>>>>>> main
