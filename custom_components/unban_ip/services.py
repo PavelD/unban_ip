@@ -13,8 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_services(hass: HomeAssistant):
     """Register Unban IP services only once."""
 
-    if DOMAIN not in hass.data:
-        hass.data[DOMAIN] = {}
+    hass.data.setdefault(DOMAIN, {})
 
     if hass.data[DOMAIN].get("services_registered"):
         _LOGGER.debug("Unban IP services already registered, skipping.")
@@ -128,13 +127,13 @@ async def async_setup_services(hass: HomeAssistant):
     _LOGGER.debug("Service 'list_banned' registered.")
 
     hass.data[DOMAIN]["services_registered"] = True
-    _LOGGER.debug("Unban IP services registerstion completed.")
+    _LOGGER.debug("Unban IP services registration completed.")
 
 
 async def async_unload_services(hass: HomeAssistant):
     """Unregister all Unban IP services."""
     if DOMAIN not in hass.data or not hass.data[DOMAIN].get("services_registered"):
-        _LOGGER.debug("Unban IP services: nothing to  unregistered.")
+        _LOGGER.debug("Unban IP services: nothing to unregistered.")
         return
 
     if hass.services.has_service(DOMAIN, "execute"):
@@ -145,5 +144,7 @@ async def async_unload_services(hass: HomeAssistant):
         hass.services.async_remove(DOMAIN, "list_banned")
         _LOGGER.debug("Service 'list_banned' unregistered.")
 
-    hass.data[DOMAIN]["services_registered"] = False
+    # Clean integration state
+    if DOMAIN in hass.data:
+        hass.data.pop(DOMAIN)
     _LOGGER.debug("Unban IP services unregistration completed.")
