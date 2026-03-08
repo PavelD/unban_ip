@@ -11,17 +11,22 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_services(hass: HomeAssistant):
-    """Register Unban IP services."""
+    """Register Unban IP services only once."""
 
+    hass.data.setdefault(DOMAIN, {})
+
+    if hass.data[DOMAIN].get("services_registered"):
+        _LOGGER.debug("Unban IP services already registered, skipping.")
+        return
+
+    # ------------------- handle_list_banned -------------------
     async def handle_list_banned(call: ServiceCall):
         """Handle list_banned service call."""
         _LOGGER.info("Listing banned IPs")
 
         banned_ips = []
 
-        # Read IPs from ban manager (single source of truth)
         try:
-            # Safe attribute access in case HTTP component isn't loaded
             http_app = getattr(hass, "http", None)
             if http_app is None:
                 _LOGGER.warning("HTTP component not available")
@@ -32,7 +37,6 @@ async def async_setup_services(hass: HomeAssistant):
                 else:
                     ban_manager = app.get(KEY_BAN_MANAGER)
                     if ban_manager:
-                        # IpBanManager stores bans in ip_bans_lookup dict
                         banned_ips = sorted(
                             str(ip) for ip in ban_manager.ip_bans_lookup.keys()
                         )
@@ -43,25 +47,21 @@ async def async_setup_services(hass: HomeAssistant):
             _LOGGER.warning(f"Could not read ban manager: {e}")
 
         _LOGGER.info(f"Total banned IPs: {len(banned_ips)}")
-
-        # Build response
         return {"ips": banned_ips, "count": len(banned_ips)}
 
+    # ------------------- handle_unban_ip -------------------
     async def handle_unban_ip(call: ServiceCall):
         """Handle unban_ip service call."""
         ip_to_unban = call.data.get("ip_address")
         _LOGGER.info(f"Attempting to unban IP: {ip_to_unban}")
 
-        # Path to ip_bans.yaml
         ban_file_path = hass.config.path(IP_BANS_FILE)
 
-        # Check if file exists (async)
         file_exists = await hass.async_add_executor_job(os.path.exists, ban_file_path)
         if not file_exists:
             _LOGGER.warning(f"{IP_BANS_FILE} not found, nothing to unban.")
             return
 
-        # Load bans (async file read)
         try:
 
             def read_bans():
@@ -73,19 +73,16 @@ async def async_setup_services(hass: HomeAssistant):
             _LOGGER.error(f"Error reading {IP_BANS_FILE}: {e}")
             return
 
-        # Home Assistant uses dictionary format: {"IP": {"banned_at": "..."}}
         if not isinstance(bans, dict):
             _LOGGER.error(
                 f"{IP_BANS_FILE} has invalid format (expected dict, got {type(bans).__name__})"
             )
             return
 
-        # Remove IP from ban dictionary
         if ip_to_unban in bans:
             del bans[ip_to_unban]
             _LOGGER.info(f"Found IP {ip_to_unban} in {IP_BANS_FILE}, removing...")
 
-            # Write updated bans back to file (async)
             try:
 
                 def write_bans():
@@ -98,9 +95,9 @@ async def async_setup_services(hass: HomeAssistant):
                 _LOGGER.error(f"Error writing {IP_BANS_FILE}: {e}")
                 return
 
-            # Reload ban manager from file (syncs memory with file)
+            # Reload ban manager
             try:
-                # Safe attribute access in case HTTP component isn't loaded
+
                 http_app = getattr(hass, "http", None)
                 if http_app is None:
                     _LOGGER.warning("HTTP component not available for reload")
@@ -120,7 +117,7 @@ async def async_setup_services(hass: HomeAssistant):
         else:
             _LOGGER.info(f"IP {ip_to_unban} not found in {IP_BANS_FILE}.")
 
-    # Register the services
+    # ------------------- register services -------------------
     hass.services.async_register(DOMAIN, "execute", handle_unban_ip)
     _LOGGER.debug("Service 'execute' registered.")
 
@@ -129,9 +126,16 @@ async def async_setup_services(hass: HomeAssistant):
     )
     _LOGGER.debug("Service 'list_banned' registered.")
 
+    hass.data[DOMAIN]["services_registered"] = True
+    _LOGGER.debug("Unban IP services registration completed.")
+
 
 async def async_unload_services(hass: HomeAssistant):
     """Unregister all Unban IP services."""
+    if DOMAIN not in hass.data or not hass.data[DOMAIN].get("services_registered"):
+        _LOGGER.debug("Unban IP services: nothing to unregistered.")
+        return
+
     if hass.services.has_service(DOMAIN, "execute"):
         hass.services.async_remove(DOMAIN, "execute")
         _LOGGER.debug("Service 'execute' unregistered.")
@@ -139,3 +143,8 @@ async def async_unload_services(hass: HomeAssistant):
     if hass.services.has_service(DOMAIN, "list_banned"):
         hass.services.async_remove(DOMAIN, "list_banned")
         _LOGGER.debug("Service 'list_banned' unregistered.")
+
+    # Clean integration state
+    if DOMAIN in hass.data:
+        hass.data.pop(DOMAIN)
+    _LOGGER.debug("Unban IP services unregistration completed.")

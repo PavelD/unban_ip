@@ -8,5 +8,6 @@
   "dependencies": ["http"],
   "codeowners": ["@PavelD"],
   "iot_class": "assumed_state",
-  "integration_type": "service"
+  "integration_type": "service",
+  "config_flow": true
 }
