@@ -121,7 +121,7 @@ async def async_setup_services(hass: HomeAssistant):
     # ------------------- register services -------------------
     hass.services.async_register(DOMAIN, "execute", handle_unban_ip)
     _LOGGER.debug("Service 'execute' registered.")
-    
+
     hass.services.async_register(
         DOMAIN, "list_banned", handle_list_banned, supports_response="only"
     )
@@ -146,4 +146,4 @@ async def async_unload_services(hass: HomeAssistant):
         _LOGGER.debug("Service 'list_banned' unregistered.")
 
     hass.data[DOMAIN]["services_registered"] = False
-    _LOGGER.debug("Unban IP services unregisteration completed.")
+    _LOGGER.debug("Unban IP services unregistration completed.")

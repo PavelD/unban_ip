@@ -48,6 +48,16 @@ Or add manually:
 
 ## Configuration
 
+Works with both YAML import and UI setup.
+
+### Via UI
+
+Go to **Settings → Devices & Services → Add Integration → Unban IP**
+
+The integration will automatically register and the services will be available
+
+### Via YAML (Legacy)
+
 Add the following to your `configuration.yaml`:
 
 ```yaml
@@ -285,6 +295,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Discussions**: [GitHub Discussions](https://github.com/PavelD/hacs-unban_ip/discussions)
 
 ## Changelog
+
+### Version 1.3.0
+- Add support of configuration via UI
+- Keep YAML configuration option
+- Improve services load and unload
 
 ### Version 1.2.0
 - **BREAKING**: Refactored to use Home Assistant's official ban manager API
