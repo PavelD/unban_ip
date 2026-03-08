@@ -1,23 +1,40 @@
 # Unban IP - Home Assistant Custom Integration
 
-A Home Assistant custom component that provides a service to unban IP addresses from the Home Assistant HTTP component's ban list.
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+![GitHub release](https://img.shields.io/github/v/release/PavelD/hacs-unban_ip)
+![GitHub license](https://img.shields.io/github/license/PavelD/hacs-unban_ip)
+
+A Home Assistant custom integration that allows removing banned IP addresses from the HTTP ban list **without restarting Home Assistant**.
+
+[![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PavelD&repository=hacs-unban_ip)
 
 ## Features
 
 - 🚫 Unban IP addresses from both file (`ip_bans.yaml`) and in-memory ban lists
-- 📋 List all banned IP addresses (from file and memory)
+- 📋 List all banned IP addresses
 - ⚡ Async I/O operations (no blocking calls)
 - 📝 Comprehensive logging for troubleshooting
 - ✅ Graceful error handling
+
+## Compatibility
+
+Tested with recent versions of Home Assistant.
+
+The integration relies on the internal HTTP ban manager used by the Home Assistant HTTP component.
 
 ## Installation
 
 ### HACS (Recommended)
 
-1. Open HACS in Home Assistant
-2. Go to "Integrations"
-3. Click the three dots in the top right corner
-4. Select "Custom repositories"
+Click the button below to open this repository directly in HACS:
+
+[![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PavelD&repository=hacs-unban_ip)
+
+Or add manually:
+
+1. Open HACS
+2. Go to **Integrations**
+3. Click **⋮ → Custom repositories**
 5. Add this repository URL: `https://github.com/PavelD/hacs-unban_ip`
 6. Select category: "Integration"
 7. Click "Add"
@@ -104,7 +121,7 @@ ips:
 count: 3
 ```
 
-The `ips` list is automatically sorted and contains all currently banned IP addresses.
+The `ips` list contains all currently banned IP addresses.
 
 #### Via Automation
 
