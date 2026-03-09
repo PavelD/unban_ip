@@ -1,13 +1,17 @@
 {
-  "domain": "unban_ip",
-  "name": "Unban IP",
-  "version": "1.1.0",
-  "requirements": [],
-  "documentation": "https://github.com/PavelD/hacs-unban_ip/",
-  "issue_tracker": "https://github.com/PavelD/hacs-unban_ip/issues",
-  "dependencies": ["http"],
-  "codeowners": ["@PavelD"],
-  "iot_class": "assumed_state",
-  "integration_type": "service",
-  "config_flow": true
+    "domain": "unban_ip",
+    "name": "Unban IP",
+    "version": "1.3.0",
+    "requirements": [],
+    "documentation": "https://github.com/PavelD/hacs-unban_ip/",
+    "issue_tracker": "https://github.com/PavelD/hacs-unban_ip/issues",
+    "dependencies": [
+        "http"
+    ],
+    "codeowners": [
+        "@PavelD"
+    ],
+    "iot_class": "assumed_state",
+    "integration_type": "service",
+    "config_flow": true
 }
