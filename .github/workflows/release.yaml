@@ -22,6 +22,14 @@ jobs:
           TAG_NAME=${TAG_NAME#v}            # Remove leading v if present
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
 
+      - name: Determine previous tag
+        id: prevtag
+        run: |
+          # Sort tags by cration date and take 2nd top
+          PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
+          echo "PREVIOUS_TAG=$PREV_TAG" >> $GITHUB_ENV
+          echo "Previous tag is $PREV_TAG"
+
       - name: Update version
         run: |
           python3 .github/update_version.py --version $TAG_NAME
@@ -37,4 +45,6 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ env.TAG_NAME }}
+          previous_tag: ${{ env.PREVIOUS_TAG }}
           generate_release_notes: true
