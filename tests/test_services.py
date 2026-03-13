@@ -279,7 +279,7 @@ async def test_unban_last_ip_deletes_file(hass: HomeAssistant, tmp_path, monkeyp
         if filename == IP_BANS_FILE:
             return str(ban_file_path)
         return str(tmp_path / filename)
-    
+
     monkeypatch.setattr(hass.config, "path", mock_config_path)
 
     # Mock ban manager
