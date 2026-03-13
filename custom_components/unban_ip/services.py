@@ -86,10 +86,7 @@ async def async_setup_services(hass: HomeAssistant):
             try:
                 if not bans:
                     # If no more IPs, delete the file instead of writing {}
-                    def delete_file():
-                        os.remove(ban_file_path)
-
-                    await hass.async_add_executor_job(delete_file)
+                    await hass.async_add_executor_job(os.remove, ban_file_path)
                     _LOGGER.info(f"Last IP removed. Deleted {IP_BANS_FILE}.")
                 else:
                     # Write updated bans to file

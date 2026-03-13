@@ -274,8 +274,13 @@ async def test_unban_last_ip_deletes_file(hass: HomeAssistant, tmp_path, monkeyp
     # Verify file exists
     assert ban_file_path.exists()
 
-    # Mock hass.config.path
-    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
+    # Mock hass.config.path to redirect only the ban file
+    def mock_config_path(filename):
+        if filename == IP_BANS_FILE:
+            return str(ban_file_path)
+        return str(tmp_path / filename)
+    
+    monkeypatch.setattr(hass.config, "path", mock_config_path)
 
     # Mock ban manager
     mock_ban_manager = create_mock_ban_manager(["192.168.1.25"])
