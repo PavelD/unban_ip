@@ -84,15 +84,20 @@ async def async_setup_services(hass: HomeAssistant):
             _LOGGER.info(f"Found IP {ip_to_unban} in {IP_BANS_FILE}, removing...")
 
             try:
+                if not bans:
+                    # If no more IPs, delete the file instead of writing {}
+                    await hass.async_add_executor_job(os.remove, ban_file_path)
+                    _LOGGER.info(f"Last IP removed. Deleted {IP_BANS_FILE}.")
+                else:
+                    # Write updated bans to file
+                    def write_bans():
+                        with open(ban_file_path, "w") as f:
+                            yaml.safe_dump(bans, f, default_flow_style=False)
 
-                def write_bans():
-                    with open(ban_file_path, "w") as f:
-                        yaml.safe_dump(bans, f, default_flow_style=False)
-
-                await hass.async_add_executor_job(write_bans)
-                _LOGGER.info(f"IP {ip_to_unban} removed from {IP_BANS_FILE}.")
+                    await hass.async_add_executor_job(write_bans)
+                    _LOGGER.info(f"IP {ip_to_unban} removed from {IP_BANS_FILE}.")
             except Exception as e:
-                _LOGGER.error(f"Error writing {IP_BANS_FILE}: {e}")
+                _LOGGER.error(f"Error updating {IP_BANS_FILE}: {e}")
                 return
 
             # Reload ban manager

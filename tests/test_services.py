@@ -257,3 +257,49 @@ async def test_list_banned_multiple_ips(hass: HomeAssistant):
     assert set(response["ips"]) == {"192.168.1.25", "192.168.2.26", "10.0.0.5"}
     # Should be sorted
     assert response["ips"] == ["10.0.0.5", "192.168.1.25", "192.168.2.26"]
+
+
+@pytest.mark.asyncio
+async def test_unban_last_ip_deletes_file(hass: HomeAssistant, tmp_path, monkeypatch):
+    """Test that removing the last IP deletes the file instead of leaving {}."""
+
+    # Create ban file with single IP
+    ban_file_path = tmp_path / IP_BANS_FILE
+    bans = {
+        "192.168.1.25": {"banned_at": "2025-11-06T21:42:12+00:00"},
+    }
+    with open(ban_file_path, "w") as f:
+        yaml.safe_dump(bans, f)
+
+    # Verify file exists
+    assert ban_file_path.exists()
+
+    # Mock hass.config.path to redirect only the ban file
+    def mock_config_path(filename):
+        if filename == IP_BANS_FILE:
+            return str(ban_file_path)
+        return str(tmp_path / filename)
+
+    monkeypatch.setattr(hass.config, "path", mock_config_path)
+
+    # Mock ban manager
+    mock_ban_manager = create_mock_ban_manager(["192.168.1.25"])
+    hass.http = MagicMock()
+    hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
+
+    # Register service
+    await async_setup_services(hass)
+
+    # Remove the last IP
+    await hass.services.async_call(
+        DOMAIN,
+        "execute",
+        {"ip_address": "192.168.1.25"},
+        blocking=True,
+    )
+
+    # File should be deleted, not contain {}
+    assert not ban_file_path.exists()
+
+    # Ban manager reload should still be called
+    mock_ban_manager.async_load.assert_called_once()
