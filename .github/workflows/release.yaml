@@ -10,7 +10,7 @@ on:
 
 jobs:
   release:
-    if: "!startsWith(github.event.head_commit.message, 'Update manifest version to')"
+    if: "!startsWith(github.event.head_commit.message, 'Release v')"
     runs-on: ubuntu-latest
 
     steps:
@@ -25,14 +25,6 @@ jobs:
           TAG_NAME=${TAG_NAME#v}            # Remove leading v if present
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
 
-      - name: Determine previous tag
-        id: prevtag
-        run: |
-          # Sort tags by cration date and take 2nd top
-          PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
-          echo "PREVIOUS_TAG=$PREV_TAG" >> $GITHUB_ENV
-          echo "Previous tag is $PREV_TAG"
-
       - name: Update version
         run: |
           python3 .github/update_version.py --version $TAG_NAME
@@ -43,11 +35,20 @@ jobs:
           git config user.email github-actions@github.com
           git add custom_components/**/manifest.json
           git commit -m "Update manifest version to $TAG_NAME" || echo "No changes"
-          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:$GITHUB_REF_NAME
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+      
+      - name: recreate tag with version
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag -d v${{ env.TAG_NAME }} || true
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --delete v${{ env.TAG_NAME }} || true
+          git fetch origin
+          git checkout main && git pull
+          git tag v${{ env.TAG_NAME }} -m "Release v${{ env.TAG_NAME }}"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git v${{ env.TAG_NAME }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.TAG_NAME }}
-          previous_tag: ${{ env.PREVIOUS_TAG }}
           generate_release_notes: true

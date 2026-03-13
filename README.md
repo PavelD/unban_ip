@@ -296,6 +296,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### Version 1.3.1
+- **Fix**: Delete `ip_bans.yaml` file when last IP is removed instead of leaving empty `{}` content
+- Prevents issues with adding new IPs after all bans are removed
+- Improved code quality: simplified nested functions, better test isolation
+
 ### Version 1.3.0
 - Add support of configuration via UI
 - Keep YAML configuration option
