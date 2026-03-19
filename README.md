@@ -296,6 +296,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### Version 1.3.2
+- Add brand images (icon.png, icon@2x.png) for better Home Assistant UI integration
+- Improved visual identity in HACS and Home Assistant integrations page
+
 ### Version 1.3.1
 - **Fix**: Delete `ip_bans.yaml` file when last IP is removed instead of leaving empty `{}` content
 - Prevents issues with adding new IPs after all bans are removed
