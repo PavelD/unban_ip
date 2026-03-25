@@ -1,6 +1,7 @@
 execute:
   name: "Unban IP"
   description: "Remove an IP address from the Home Assistant ban list"
+  icon: mdi:lock-open-check
   fields:
     ip_address:
       name: "IP Address"
@@ -11,3 +12,4 @@ execute:
 list_banned:
   name: "List Banned IPs"
   description: "List all banned IP addresses"
+  icon: mdi:playlist-remove
