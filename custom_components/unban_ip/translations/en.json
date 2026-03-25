@@ -1,6 +1,12 @@
 {
   "title": "Unban IP",
   "config": {
+    "step": {
+      "user": {
+        "title": "Set up Unban IP",
+        "description": "This integration provides services to manage Home Assistant's IP ban list."
+      }
+    },
     "abort": {
       "single_instance_allowed": "Only a single instance is allowed."
     }
