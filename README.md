@@ -298,6 +298,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### Version 1.4.0
+- Intrduce Hassfest and fix reported issues
+
 ### Version 1.3.3
 - Add visual and UI metadata improvements to the Unban IP integration. (#10)
 
