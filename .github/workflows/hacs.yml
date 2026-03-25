@@ -24,6 +24,9 @@ jobs:
         run: |
           python -m json.tool hacs.json
 
+      - name: Run Hassfest
+        uses: home-assistant/hassfest-action@main
+
       - name: HACS Action
         uses: "hacs/action@main"
         with:
