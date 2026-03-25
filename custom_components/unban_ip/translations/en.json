@@ -1,5 +1,10 @@
 {
   "title": "Unban IP",
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Only a single instance is allowed."
+    }
+  },
   "services": {
     "execute": {
       "name": "Unban IP",

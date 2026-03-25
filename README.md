@@ -66,6 +66,8 @@ unban_ip:
 
 After adding this line, restart Home Assistant to load the integration.
 
+<img src="https://raw.githubusercontent.com/PavelD/hacs-unban_ip/main/images/integration.png" alt="Unban IP Integration" align="center"/>
+
 ## Usage
 
 ### Service Call
