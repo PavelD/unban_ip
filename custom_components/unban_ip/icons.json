@@ -1,0 +1,6 @@
+{
+  "services": {
+    "execute": "mdi:lock-open-check",
+    "list_banned": "mdi:playlist-remove"
+  }
+}

@@ -1,15 +1,17 @@
 execute:
   name: "Unban IP"
   description: "Remove an IP address from the Home Assistant ban list"
-  icon: mdi:lock-open-check
+  target: {}
   fields:
     ip_address:
       name: "IP Address"
       description: "The IP address to unban"
       example: "192.168.1.25"
       required: true
+      selector:
+        text:
 
 list_banned:
   name: "List Banned IPs"
   description: "List all banned IP addresses"
-  icon: mdi:playlist-remove
+  target: {}
