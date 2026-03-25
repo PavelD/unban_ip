@@ -298,8 +298,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### Version 1.3.3
+- Add visual and UI metadata improvements to the Unban IP integration. (#10)
+
 ### Version 1.3.2
-- Add brand images (icon.png, icon@2x.png) for better Home Assistant UI integration
+- Add brand images (`icon.png`, `icon@2x.png`) for better Home Assistant UI integration
 - Improved visual identity in HACS and Home Assistant integrations page
 
 ### Version 1.3.1
