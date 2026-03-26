@@ -8,10 +8,10 @@
     "dependencies": [
         "http"
     ],
-    "documentation": "https://github.com/PavelD/unban_ip/",
+    "documentation": "https://github.com/PavelD/ha-unban_ip/",
     "integration_type": "service",
     "iot_class": "assumed_state",
-    "issue_tracker": "https://github.com/PavelD/unban_ip/issues",
+    "issue_tracker": "https://github.com/PavelD/ha-unban_ip/issues",
     "requirements": [],
     "version": "1.4.0"
 }
