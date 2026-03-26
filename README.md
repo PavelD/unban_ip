@@ -1,12 +1,12 @@
 # Unban IP - Home Assistant Custom Integration
 
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
-![GitHub release](https://img.shields.io/github/v/release/PavelD/unban_ip)
-![GitHub license](https://img.shields.io/github/license/PavelD/unban_ip)
+![GitHub release](https://img.shields.io/github/v/release/PavelD/ha-unban_ip)
+![GitHub license](https://img.shields.io/github/license/PavelD/ha-unban_ip)
 
 A Home Assistant custom integration that allows removing banned IP addresses from the HTTP ban list **without restarting Home Assistant**.
 
-[![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PavelD&repository=unban_ip)
+[![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PavelD&repository=ha-unban_ip)
 
 ## Features
 
@@ -28,14 +28,14 @@ The integration relies on the internal HTTP ban manager used by the Home Assista
 
 Click the button below to open this repository directly in HACS:
 
-[![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PavelD&repository=unban_ip)
+[![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PavelD&repository=ha-unban_ip)
 
 Or add manually:
 
 1. Open HACS
 2. Go to **Integrations**
 3. Click **⋮ → Custom repositories**
-5. Add this repository URL: `https://github.com/PavelD/unban_ip`
+5. Add this repository URL: `https://github.com/PavelD/ha-unban_ip`
 6. Select category: "Integration"
 7. Click "Add"
 8. Search for "Unban IP" and install
@@ -66,7 +66,7 @@ unban_ip:
 
 After adding this line, restart Home Assistant to load the integration.
 
-<img src="https://raw.githubusercontent.com/PavelD/unban_ip/main/images/integration.png" alt="Unban IP Integration" align="center"/>
+<img src="https://raw.githubusercontent.com/PavelD/ha-unban_ip/main/images/integration.png" alt="Unban IP Integration" align="center"/>
 
 ## Usage
 
@@ -293,8 +293,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/PavelD/unban_ip/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/PavelD/unban_ip/discussions)
+- **Issues**: [GitHub Issues](https://github.com/PavelD/ha-unban_ip/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/PavelD/ha-unban_ip/discussions)
 
 ## Changelog
 
