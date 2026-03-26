@@ -300,9 +300,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Version 1.4.0
 - Intrduce Hassfest and fix reported issues
+- **BREAKING**: Rename repository from hacs-unban_ip to unban_ip
 
 ### Version 1.3.3
-- Add visual and UI metadata improvements to the Unban IP integration. (#10)
+- Add visual and UI metadata improvements to the Unban IP integration
 
 ### Version 1.3.2
 - Add brand images (`icon.png`, `icon@2x.png`) for better Home Assistant UI integration
