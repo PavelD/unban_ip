@@ -1,7 +1,6 @@
 execute:
   name: "Unban IP"
   description: "Remove an IP address from the Home Assistant ban list"
-  target: {}
   fields:
     ip_address:
       name: "IP Address"
@@ -14,4 +13,3 @@ execute:
 list_banned:
   name: "List Banned IPs"
   description: "List all banned IP addresses"
-  target: {}
