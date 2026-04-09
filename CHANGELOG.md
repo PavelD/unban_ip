@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.4.1
+- **Fix**: Remove invalid lines from services.yaml definition
+- Update CI/CD workflows
+
 ## Version 1.4.0
 - Introduce Hassfest integration
 - **BREAKING**: Rename repository from `hacs-unban_ip` to `ha-unban_ip`

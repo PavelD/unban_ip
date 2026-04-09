@@ -1,4 +1,4 @@
-name: HACS Action
+name: Hassfest Action
 
 permissions:
   contents: read
