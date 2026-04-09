@@ -15,7 +15,7 @@
 
 ## Version 1.3.0
 - Add support for configuration via UI
-- Improve services load and unload
+- Improve service loading and unloading
 
 ## Version 1.2.0
 - **BREAKING**: Refactored to use Home Assistant's official ban manager API
