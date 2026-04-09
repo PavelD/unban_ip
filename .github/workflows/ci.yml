@@ -1,5 +1,9 @@
 name: I
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -14,6 +18,7 @@ on:
 
 jobs:
   black:
+    if: "!startsWith(github.event.head_commit.message, 'Update manifest version to')"
     name: Python Code Format Check
     runs-on: ubuntu-latest
     steps:
@@ -25,7 +30,9 @@ jobs:
           args: ". --check --fast --diff"
 
   tests:
+    if: "!startsWith(github.event.head_commit.message, 'Update manifest version to')"
     runs-on: ubuntu-latest
+    name: Test Integration
 
     strategy:
       matrix:
