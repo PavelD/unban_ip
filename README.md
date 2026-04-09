@@ -298,47 +298,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-### Version 1.4.0
-- Intrduce Hassfest and fix reported issues
-- **BREAKING**: Rename repository from hacs-unban_ip to unban_ip
-
-### Version 1.3.3
-- Add visual and UI metadata improvements to the Unban IP integration
-
-### Version 1.3.2
-- Add brand images (`icon.png`, `icon@2x.png`) for better Home Assistant UI integration
-- Improved visual identity in HACS and Home Assistant integrations page
-
-### Version 1.3.1
-- **Fix**: Delete `ip_bans.yaml` file when last IP is removed instead of leaving empty `{}` content
-- Prevents issues with adding new IPs after all bans are removed
-- Improved code quality: simplified nested functions, better test isolation
-
-### Version 1.3.0
-- Add support of configuration via UI
-- Keep YAML configuration option
-- Improve services load and unload
-
-### Version 1.2.0
-- **BREAKING**: Refactored to use Home Assistant's official ban manager API
-- Uses official `KEY_BAN_MANAGER` and `IP_BANS_FILE` constants from Home Assistant
-- Calls `ban_manager.async_load()` after file changes for automatic sync
-- **BREAKING**: Removed `debug` parameter from `list_banned` service
-  - The service now returns only `ips` and `count` fields
-  - Removed `file_ips` and `memory_ips` fields (no longer relevant with single source of truth)
-  - **Migration**: Update automations/templates that use `file_ips` or `memory_ips` to use `ips` instead
-- Simplified `list_banned` service (reads directly from ban manager)
-- Added safe attribute access for HTTP component (handles edge cases where HTTP isn't loaded)
-- More reliable and future-proof implementation
-
-### Version 1.1.0
-- Added `unban_ip.list_banned` service to list all banned IPs
-- Service responses with structured data for use in automations
-- Enhanced UI with friendly service names
-
-### Version 1.0.0
-- Initial release
-- Support for unbanning IPs from file and memory
-- Async I/O operations (no blocking calls)
-- Comprehensive error handling and logging
-- Clean, simple service interface: `unban_ip.execute`
+See [CHANGELOG.md](CHANGELOG.md) for version history.
