@@ -6,11 +6,12 @@ concurrency:
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'custom_components/**'
       - 'tests/**'
   pull_request:
-    types: [opened, synchronize, reopened]
     paths:
       - 'custom_components/**'
       - 'tests/**'
