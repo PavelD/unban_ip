@@ -1,6 +1,9 @@
 # Changelog
 
 ## Version 1.4.1
+- **Fix**: Enable YAML configuration support by changing `CONFIG_SCHEMA` from `config_entry_only_config_schema` to `empty_config_schema`
+  - Resolves error: "The unban_ip integration does not support YAML configuration"
+  - Integration now supports both UI setup and YAML configuration (`unban_ip:` in configuration.yaml)
 - **Fix**: Remove invalid lines from services.yaml definition
 - Update CI/CD workflows
 
