@@ -303,3 +303,60 @@ async def test_unban_last_ip_deletes_file(hass: HomeAssistant, tmp_path, monkeyp
 
     # Ban manager reload should still be called
     mock_ban_manager.async_load.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_unban_last_ip_reloads_from_empty_file_before_deleting(
+    hass: HomeAssistant, tmp_path, monkeypatch
+):
+    """Test that when the last IP is unbanned, the ban manager reloads from an
+    empty file BEFORE the file is deleted, ensuring in-memory bans are cleared."""
+
+    # Create ban file with single IP
+    ban_file_path = tmp_path / IP_BANS_FILE
+    bans = {
+        "192.168.1.25": {"banned_at": "2025-11-06T21:42:12+00:00"},
+    }
+    with open(ban_file_path, "w") as f:
+        yaml.safe_dump(bans, f)
+
+    monkeypatch.setattr(hass.config, "path", lambda x: str(ban_file_path))
+
+    # Capture file state at the moment ban manager reloads
+    file_state_during_reload = {}
+
+    async def capture_file_state():
+        """Record file existence and content when async_load is called."""
+        file_state_during_reload["exists"] = ban_file_path.exists()
+        if ban_file_path.exists():
+            with open(ban_file_path, "r") as f:
+                file_state_during_reload["content"] = yaml.safe_load(f)
+
+    mock_ban_manager = create_mock_ban_manager(["192.168.1.25"])
+    mock_ban_manager.async_load = AsyncMock(side_effect=capture_file_state)
+    hass.http = MagicMock()
+    hass.http.app = {KEY_BAN_MANAGER: mock_ban_manager}
+
+    await async_setup_services(hass)
+
+    await hass.services.async_call(
+        DOMAIN,
+        "execute",
+        {"ip_address": "192.168.1.25"},
+        blocking=True,
+    )
+
+    # File must be deleted at the end
+    assert not ban_file_path.exists()
+
+    # Ban manager must have been reloaded
+    mock_ban_manager.async_load.assert_called_once()
+
+    # CRITICAL: The file must have existed (as empty) when async_load was called,
+    # so the ban manager could clear its in-memory bans.
+    assert file_state_during_reload.get(
+        "exists"
+    ), "File must exist when ban manager reloads to allow clearing in-memory bans"
+    assert (
+        file_state_during_reload.get("content") == {}
+    ), "File must be empty when ban manager reloads, not contain old bans"
