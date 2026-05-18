@@ -1,6 +1,6 @@
 # Unban IP - Home Assistant Custom Integration
 
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 ![GitHub release](https://img.shields.io/github/v/release/PavelD/ha-unban_ip)
 ![GitHub license](https://img.shields.io/github/license/PavelD/ha-unban_ip)
 
@@ -26,25 +26,15 @@ The integration relies on the internal HTTP ban manager used by the Home Assista
 
 ### HACS (Recommended)
 
-Click the button below to open this repository directly in HACS:
+This integration is available in HACS. Search for "Unban IP" in the HACS integrations store, or click the button below:
 
 [![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=PavelD&repository=ha-unban_ip)
 
-Or add manually:
-
-1. Open HACS
-2. Go to **Integrations**
-3. Click **⋮ → Custom repositories**
-5. Add this repository URL: `https://github.com/PavelD/ha-unban_ip`
-6. Select category: "Integration"
-7. Click "Add"
-8. Search for "Unban IP" and install
-9. Restart Home Assistant
+After installation, restart Home Assistant.
 
 ### Manual Installation
 
-1. Copy the `custom_components/unban_ip` directory to your Home Assistant's `custom_components` folder
-2. Restart Home Assistant
+Copy the `custom_components/unban_ip` directory to your Home Assistant's `custom_components` folder and restart Home Assistant.
 
 ## Configuration
 
