@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.4.2
+- **Fix**: Improve last IP removal handling (#16)
+- Add comprehensive test suite for IP banning/unbanning functionality
+
 ## Version 1.4.1
 - **Fix**: Enable YAML configuration support by changing `CONFIG_SCHEMA` from `config_entry_only_config_schema` to `empty_config_schema`
   - Resolves error: "The unban_ip integration does not support YAML configuration"
